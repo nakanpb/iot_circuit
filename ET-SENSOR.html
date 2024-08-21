@@ -19,9 +19,7 @@
   </head>
   <body>
     <div class="container max-w-3xl mx-auto pt-16">
-      <h1 class="font-bold text-2xl">
-        ค่าอุณหภูมิและความชื้นจาก Raspberry Pi 1
-      </h1>
+      <h1 class="font-bold text-2xl">ค่าอุณหภูมิและความชื้นจาก Raspberry Pi 1</h1>
 
       <canvas id="chart-1" class="w-full h-[300px]"></canvas>
 
@@ -68,7 +66,7 @@
     </script>
 
     <script>
-      const ws = new WebSocket("wss://7f97f21210e64f.lhr.life");
+      const ws = new WebSocket("wss://156e7642951dc4.lhr.life");
 
       const clientStatus = document.getElementById("client-status");
       let lastestReceivedAt = 0;
@@ -82,30 +80,30 @@
       };
 
       ws.onmessage = (event) => {
-        const message = event.data;
-        const match = message.match(
-          /Temperature: ([\d.]+)°C, Humidity: ([\d.]+)%/
-        );
-        if (match) {
-          const temperature = parseFloat(match[1]);
-          const humidity = parseFloat(match[2]);
-          console.log("Received temperature:", temperature, "°C");
-          console.log("Received humidity:", humidity, "%");
+      const message = event.data;
+      const match = message.match(/Temperature: ([\d.]+)°C, Humidity: ([\d.]+)%/);
+      if (match) {
+        const temperature = parseFloat(match[1]);
+        const humidity = parseFloat(match[2]);
+        console.log("Received temperature:", temperature, "°C");
+        console.log("Received humidity:", humidity, "%");
 
-          chart.data.labels.push(new Date().toLocaleTimeString());
-          chart.data.datasets[0].data.push(temperature);
+        // Update chart with temperature data
+        chart.data.labels.push(new Date().toLocaleTimeString());
+        chart.data.datasets[0].data.push(temperature);
+        chart.update();
+
+        // Limit to last 20 data points
+        if (chart.data.labels.length > 20) {
+          chart.data.labels.shift();
+          chart.data.datasets[0].data.shift();
           chart.update();
-
-          if (chart.data.labels.length > 20) {
-            chart.data.labels.shift();
-            chart.data.datasets[0].data.shift();
-            chart.update();
-          }
-          chart.data.datasets[1].data.push(humidity);
-        } else {
-          console.error("Invalid sensor data format:", message);
         }
-      };
+        chart.data.datasets[1].data.push(humidity);
+      } else {
+        console.error("Invalid sensor data format:", message);
+      }
+    };
 
       ws.onclose = () => {
         console.log("Disconnected from the WebSocket server");
